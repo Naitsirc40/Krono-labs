@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KRONO // Precision Energy OS v3.0</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg-base: #f0f3f8;
+      --surface-1: rgba(255, 255, 255, 0.92);
+      --surface-2: rgba(238, 242, 246, 0.85);
+      --border-col: rgba(15, 23, 42, 0.1);
+      --text-primary: #090d16;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+    }
+    html.dark {
+      --bg-base: #05070b;
+      --surface-1: rgba(15, 19, 29, 0.85);
+      --surface-2: rgba(24, 30, 45, 0.65);
+      --border-col: rgba(255, 255, 255, 0.09);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+    }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      transition: background-color 0.4s ease, color 0.3s ease;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .glass-panel {
+      background: var(--surface-1);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid var(--border-col);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+    }
+    .glass-sub {
+      background: var(--surface-2);
+      border: 1px solid var(--border-col);
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range]:focus { outline: none; }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 10px;
+      cursor: pointer;
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 999px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 26px;
+      width: 26px;
+      border-radius: 50%;
+      background: #3b82f6;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -8px;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
+      border: 3px solid #ffffff;
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    input[type=range]::-webkit-slider-thumb:active {
+      transform: scale(1.22);
+    }
+    .emerald-slider::-webkit-slider-thumb {
+      background: #10b981 !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.7) !important;
+    }
+    .gauge-ring {
+      transition: stroke-dashoffset 0.5s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
+    }
+    .ambient-light {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(130px);
+      z-index: -1;
+      pointer-events: none;
+      transition: all 0.8s ease;
+    }
+    .appliance-chip {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .appliance-chip.active {
+      background: rgba(59, 130, 246, 0.22);
+      border-color: #3b82f6;
+      color: #3b82f6;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.25);
+    }
+    html.dark .appliance-chip.active {
+      color: #60a5fa;
+    }
+  </style>
+  <script>
+    // =====================================================
+    // 💰 CAJA FUERTE DE MONETIZACIÓN (Tus enlaces de afiliado)
+    // =====================================================
+    const MONETIZATION = {
+      tarifaLuzUrl: "https://www.octopusenergy.es",
+      presupuestoSolarUrl: "https://www.awin.com",
+      medidorAmazonUrl: "https://amzn.to/3example"
+    };
+  </script>
+</head>
+<body class="min-h-screen pb-20 selection:bg-blue-500 selection:text-white">
+
+  <!-- Luces Ambientales -->
+  <div id="aura-top" class="ambient-light w-[420px] h-[420px] bg-blue-600/15 top-[-120px] left-[-100px]"></div>
+  <div id="aura-bottom" class="ambient-light w-[380px] h-[380px] bg-cyan-500/10 bottom-[5%] right-[-120px]"></div>
+
+  <!-- BARRA SUPERIOR -->
+  <header class="sticky top-3 z-50 mx-auto max-w-6xl px-3 sm:px-5">
+    <nav class="glass-panel rounded-2xl px-4 py-2.5 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-extrabold tracking-tight text-base sm:text-lg">KRONO</span>
+            <span class="text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-blue-500/15 text-blue-500 dark:text-blue-400 border border-blue-500/30 font-bold">OS 3.0</span>
+          </div>
+          <p class="text-[10px] text-[var(--text-muted)] hidden sm:block">✓ Memoria local activa</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1 glass-sub p-1 rounded-xl">
+        <button onclick="switchMainView('app')" id="nav-app" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow">
+          ⚡ Auditor Luz & Solar
+        </button>
+        <button onclick="switchMainView('hub')" id="nav-hub" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
+          Suite (4)
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="shareReport()" title="Copiar Informe" class="px-2.5 py-1.5 rounded-xl glass-sub text-xs font-semibold text-[var(--text-secondary)] hover:border-blue-500/40 transition-all flex items-center gap-1">
+          <span>📤</span> <span class="hidden md:inline">Informe</span>
+        </button>
+        <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl glass-sub flex items-center justify-center hover:scale-105 transition-all">
+          <span id="theme-icon" class="text-sm">☀️</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-3 sm:px-5 mt-5">
+
+    <!-- VISTA 1: AUDITOR -->
+    <section id="view-app" class="space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">Centro de Control Energético</h1>
+          <p class="text-xs text-[var(--text-muted)]">Cálculo exacto con peajes CNMC e impuestos de España</p>
+        </div>
+        <div class="glass-panel p-1.5 rounded-2xl grid grid-cols-5 gap-1 sm:inline-flex self-stretch sm:self-auto">
+          <button onclick="setPeriod('live')" id="p-live" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Vivo</button>
+          <button onclick="setPeriod('day')" id="p-day" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Día</button>
+          <button onclick="setPeriod('week')" id="p-week" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Semana</button>
+          <button onclick="setPeriod('month')" id="p-month" class="px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md transition-all text-center">Mes</button>
+          <button onclick="setPeriod('year')" id="p-year" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Año</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Izquierda: Anillo + Diagnóstico -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="glass-panel rounded-3xl p-6 relative overflow-hidden">
+            <div class="flex items-center justify-between mb-2">
+              <span id="period-title" class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Factura Mensual Estimada</span>
+              <span id="status-pill" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">Red Estándar</span>
+            </div>
+
+            <div class="relative flex items-center justify-center my-4">
+              <svg class="w-52 h-52 transform -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" stroke="currentColor" stroke-width="10" class="text-slate-300 dark:text-slate-800" fill="transparent"/>
+                <circle id="ring-energy" cx="60" cy="60" r="50" stroke="#3b82f6" stroke-width="10" stroke-dasharray="314.16" stroke-dashoffset="100" stroke-linecap="round" fill="transparent" class="gauge-ring"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span class="text-[11px] font-mono uppercase text-[var(--text-muted)]">Total con IVA</span>
+                <div class="flex items-baseline justify-center mt-0.5">
+                  <span id="main-total" class="text-4xl sm:text-5xl font-extrabold font-mono tracking-tighter text-[var(--text-primary)]">0,00</span>
+                  <span class="text-lg font-bold text-blue-600 dark:text-blue-400 ml-1">€</span>
+                </div>
+                <span id="effective-kwh-badge" class="mt-1 text-[11px] font-mono px-2 py-0.5 rounded-md glass-sub text-[var(--text-secondary)]">Real: 0,21 €/kWh</span>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 mt-2">
+              <div class="flex justify-between text-[11px] font-semibold">
+                <span class="text-blue-600 dark:text-blue-400">⚡ Luz: <span id="pct-e">0%</span></span>
+                <span class="text-indigo-600 dark:text-indigo-400">🔌 Fijo: <span id="pct-p">0%</span></span>
+                <span class="text-amber-600 dark:text-amber-400">🏛️ Impuestos: <span id="pct-t">0%</span></span>
+              </div>
+              <div class="w-full h-2.5 rounded-full glass-sub overflow-hidden flex p-0.5 gap-0.5">
+                <div id="bar-e" class="bg-blue-500 h-full rounded-l-full transition-all duration-300" style="width: 50%"></div>
+                <div id="bar-p" class="bg-indigo-500 h-full transition-all duration-300" style="width: 30%"></div>
+                <div id="bar-t" class="bg-amber-500 h-full rounded-r-full transition-all duration-300" style="width: 20%"></div>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-[var(--border-col)] space-y-2.5 text-xs sm:text-sm">
+              <div class="flex justify-between"><span class="text-[var(--text-secondary)]">Potencia Fija:</span><span id="val-power-cost" class="font-mono font-bold text-[var(--text-primary)]">0,00 €</span></div>
+              <div class="flex justify-between"><span class="text-[var(--text-secondary)]">Energía de red:</span><span id="val-energy-cost" class="font-mono font-bold text-[var(--text-primary)]">0,00 €</span></div>
+              <div id="row-solar-comp" class="hidden flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold"><span>☀️ Excedentes:</span><span id="val-solar-comp" class="font-mono">-0,00 €</span></div>
+              <div class="flex justify-between"><span class="text-[var(--text-secondary)]">Impuestos + IVA:</span><span id="val-tax-cost" class="font-mono font-bold text-[var(--text-primary)]">0,00 €</span></div>
+            </div>
+
+            <div id="solar-summary-card" class="hidden mt-4 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-2">
+              <div class="flex justify-between items-center"><span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Ahorro con Placas</span><span id="val-solar-savings" class="text-lg font-mono font-extrabold text-emerald-600 dark:text-emerald-400">-0,00 €</span></div>
+              <div class="flex justify-between text-xs text-[var(--text-secondary)]"><span>Batería Virtual:</span><strong id="val-bv-accum" class="font-mono text-emerald-700 dark:text-emerald-300">0,00 €</strong></div>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-3xl p-5 space-y-3 border-l-4 border-l-amber-500">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2"><span class="text-lg">🕵️‍♂️</span><h3 class="text-sm font-extrabold uppercase text-[var(--text-primary)]">Diagnóstico Inteligente</h3></div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold">ACTIVO</span>
+            </div>
+            <div id="audit-messages" class="space-y-2 text-xs leading-relaxed text-[var(--text-secondary)]"></div>
+            <div>
+              <button onclick="openTariffModal()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-lg shadow-blue-500/25 flex items-center justify-between transition-all">
+                <span>💡 Ver cómo bajar tu factura <span id="cta-save-amount">180 €/año</span></span>
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Derecha: Simulador de Aparatos Ampliado + Contrato + Solar -->
+        <div class="lg:col-span-7 space-y-5">
+          <div class="glass-panel rounded-3xl p-5 sm:p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="text-base font-extrabold flex items-center gap-2 text-[var(--text-primary)]"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>Simulador Doméstico en Vivo</h2>
+                <p class="text-xs text-[var(--text-muted)]">Toca los aparatos encendidos en tu hogar</p>
+              </div>
+              <div class="text-right glass-sub px-3 py-1.5 rounded-xl">
+                <span id="live-watts-display" class="font-mono text-base font-extrabold text-cyan-600 dark:text-cyan-400">350 W</span>
+                <span class="block text-[10px] font-mono text-[var(--text-muted)]" id="live-euro-hour">0,06 €/hora</span>
+              </div>
+            </div>
+
+            <!-- CATÁLOGO AMPLIADO DE APARATOS FAMILIARES -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button onclick="toggleAppliance(this, 250)" class="appliance-chip active glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">🏠 Base Hogar</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Frigo + Router (250W)</div></button>
+              <button onclick="toggleAppliance(this, 1100)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">❄️ Aire Acond.</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Split Inverter (1100W)</div></button>
+              <button onclick="toggleAppliance(this, 2200)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">🍳 Vitro / Horno</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Fuego o grill (2200W)</div></button>
+              <button onclick="toggleAppliance(this, 1800)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">🧺 Lavadora</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Agua caliente (1800W)</div></button>
+              <button onclick="toggleAppliance(this, 2200)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">👕 Secadora</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Condensación (2200W)</div></button>
+              <button onclick="toggleAppliance(this, 1500)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">🍽️ Lavavajillas</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Ciclo lavado (1500W)</div></button>
+              <button onclick="toggleAppliance(this, 2000)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">🚿 Termo Eléctr.</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Acumulador (2000W)</div></button>
+              <button onclick="toggleAppliance(this, 2000)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">🔥 Estufa / Calef.</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Resistencia (2000W)</div></button>
+              <button onclick="toggleAppliance(this, 900)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">🏊 Depuradora</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Bomba piscina (900W)</div></button>
+              <button onclick="toggleAppliance(this, 3600)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">🔌 Coche Eléctr.</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Wallbox 16A (3600W)</div></button>
+              <button onclick="toggleAppliance(this, 2000)" class="appliance-chip glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">💨 Secador Pelo</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Alta potencia (2000W)</div></button>
+              <button onclick="toggleAppliance(this, 350)" class="appliance-chip active glass-sub p-2.5 rounded-xl text-left"><div class="text-sm font-bold text-[var(--text-primary)]">🖥️ PC + TV + Luz</div><div class="text-[11px] font-mono text-[var(--text-muted)]">Multimedia (350W)</div></button>
+            </div>
+
+            <div>
+              <input type="range" id="slider-live-watts" min="100" max="9500" step="50" value="600" oninput="manualWattsChange()">
+              <div id="icp-warning" class="hidden mt-2 p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold">⚠️ ¡Peligro de salto de ICP (exceso de potencia contratada)!</div>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-3xl p-5 sm:p-6 space-y-4">
+            <h2 class="text-base font-extrabold text-[var(--text-primary)]">1. Consumo Diario y Potencia</h2>
+            <div>
+              <div class="flex justify-between text-sm mb-2">
+                <span class="text-[var(--text-secondary)]">Consumo diario</span>
+                <span class="font-mono font-extrabold text-blue-600 dark:text-blue-400"><span id="lbl-daily-kwh">12.0</span> kWh/día</span>
+              </div>
+              <input type="range" id="input-daily-kwh" min="2" max="45" step="0.5" value="12.0" oninput="recalc()">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div class="glass-sub p-3.5 rounded-2xl">
+                <span class="text-xs text-[var(--text-muted)] block mb-1">Potencia P1 (kW)</span>
+                <input type="number" id="input-p1-kw" value="4.6" step="0.1" oninput="recalc()" class="bg-transparent font-mono text-xl font-extrabold w-full text-blue-600 dark:text-blue-400 focus:outline-none">
+              </div>
+              <div class="glass-sub p-3.5 rounded-2xl">
+                <span class="text-xs text-[var(--text-muted)] block mb-1">Precio Fijo 24h (€/kWh)</span>
+                <input type="number" id="input-price-fixed" value="0.128" step="0.005" oninput="recalc()" class="bg-transparent font-mono text-xl font-extrabold w-full text-blue-600 dark:text-blue-400 focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-3xl p-5 sm:p-6 space-y-4 border-emerald-500/20">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">☀️</span>
+                <div><h2 class="text-base font-extrabold text-[var(--text-primary)]">2. Simulador Fotovoltaico</h2><p class="text-xs text-[var(--text-muted)]">Autoconsumo y Batería Virtual</p></div>
+              </div>
+              <button onclick="toggleSolar()" id="solar-toggle-btn" class="w-14 h-8 rounded-full bg-slate-500/30 p-1 transition-all flex items-center">
+                <div id="solar-toggle-dot" class="w-6 h-6 rounded-full bg-white shadow-md transform transition-transform"></div>
+              </button>
+            </div>
+
+            <div id="solar-panel-body" class="hidden space-y-4 pt-3 border-t border-[var(--border-col)]">
+              <div>
+                <div class="flex justify-between text-sm mb-1.5">
+                  <span class="text-[var(--text-secondary)]">Tamaño (<span id="lbl-num-panels" class="text-emerald-600 dark:text-emerald-400 font-bold">8 placas</span>)</span>
+                  <span class="font-mono font-extrabold text-emerald-600 dark:text-emerald-400"><span id="lbl-solar-gen">16.2</span> kWh/día</span>
+                </div>
+                <input type="range" id="input-panels" class="emerald-slider" min="2" max="20" step="1" value="8" oninput="recalc()">
+              </div>
+              <div class="glass-sub p-3 rounded-2xl flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold block text-emerald-600 dark:text-emerald-400">Batería Virtual (Hucha Solar)</span>
+                  <span class="text-[11px] text-[var(--text-muted)]">Compensa cuota fija y excedentes de invierno.</span>
+                </div>
+                <input type="checkbox" id="check-bv" checked onchange="recalc()" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 2: SUITE -->
+    <section id="view-hub" class="hidden space-y-6 py-4">
+      <div class="text-center max-w-2xl mx-auto">
+        <span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-mono uppercase">KRONO LABS</span>
+        <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight mt-3 text-[var(--text-primary)]">Herramientas profesionales.</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div onclick="switchMainView('app')" class="glass-panel rounded-3xl p-6 cursor-pointer hover:border-blue-500 transition-all">
+          <span class="text-3xl">⚡</span>
+          <h3 class="text-xl font-extrabold mt-4 text-[var(--text-primary)]">Auditor Eléctrico & Solar</h3>
+          <p class="text-xs text-[var(--text-muted)] mt-1.5">Telemetría en vivo y Batería Virtual.</p>
+        </div>
+        <div class="glass-panel rounded-3xl p-6 opacity-75">
+          <span class="text-3xl">🏍️</span>
+          <h3 class="text-xl font-extrabold mt-4 text-[var(--text-primary)]">Calculadora ITP Vehículos</h3>
+          <p class="text-xs text-[var(--text-muted)] mt-1.5">Próximo lanzamiento.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL AFILIACIÓN -->
+  <div id="tariff-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl max-w-md w-full p-6 space-y-4 border border-blue-500/30">
+      <div class="flex justify-between items-start">
+        <div>
+          <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold">Ahorro Garantizado</span>
+          <h3 class="text-xl font-extrabold mt-1 text-[var(--text-primary)]">Optimización de Tarifa</h3>
+        </div>
+        <button onclick="closeTariffModal()" class="w-8 h-8 rounded-full glass-sub flex items-center justify-center text-[var(--text-primary)]">✕</button>
+      </div>
+      <p id="modal-comparison-text" class="text-xs text-[var(--text-secondary)] leading-relaxed"></p>
+      
+      <!-- BOTÓN CONECTADO A LA CAJA FUERTE DE MONETIZACIÓN -->
+      <a id="affiliate-button-link" href="#" target="_blank" class="block w-full py-3.5 text-center rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/30 transition-all">
+        Cambiar a Tarifa Recomendada (Ahorro Anual) →
+      </a>
+      
+      <button onclick="closeTariffModal()" class="w-full py-2 rounded-xl glass-sub text-xs text-[var(--text-secondary)]">Volver al Simulador</button>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden glass-panel px-4 py-3 rounded-2xl border-emerald-500/40 text-xs font-bold text-emerald-600 dark:text-emerald-400 shadow-2xl">✓ Informe copiado al portapapeles</div>
+
+  <script>
+    let currentPeriod = 'month';
+    let solarActive = false;
+    let activeWatts = 600;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('krono_energy_v3');
+      if (saved) {
+        try {
+          const d = JSON.parse(saved);
+          if (d.dailyKwh) document.getElementById('input-daily-kwh').value = d.dailyKwh;
+          if (d.p1Kw) document.getElementById('input-p1-kw').value = d.p1Kw;
+          if (d.priceFixed) document.getElementById('input-price-fixed').value = d.priceFixed;
+        } catch(e) {}
+      }
+      document.getElementById('affiliate-button-link').href = MONETIZATION.tarifaLuzUrl;
+      recalc();
+    });
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      document.getElementById('theme-icon').textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+
+    function switchMainView(view) {
+      document.getElementById('view-app').classList.toggle('hidden', view !== 'app');
+      document.getElementById('view-hub').classList.toggle('hidden', view !== 'hub');
+      document.getElementById('nav-app').className = view === 'app' ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow' : 'px-3 py-1.5 rounded-lg text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all';
+      document.getElementById('nav-hub').className = view === 'hub' ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow' : 'px-3 py-1.5 rounded-lg text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all';
+    }
+
+    function setPeriod(p) {
+      currentPeriod = p;
+      ['live', 'day', 'week', 'month', 'year'].forEach(id => {
+        document.getElementById('p-' + id).className = (id === p) ? 'px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md transition-all text-center' : 'px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]';
+      });
+      recalc();
+    }
+
+    function toggleAppliance(btn, watts) {
+      btn.classList.toggle('active');
+      if (btn.classList.contains('active')) { activeWatts += watts; } else { activeWatts = Math.max(100, activeWatts - watts); }
+      document.getElementById('slider-live-watts').value = activeWatts;
+      recalc();
+    }
+
+    function manualWattsChange() {
+      activeWatts = parseFloat(document.getElementById('slider-live-watts').value) || 100;
+      document.querySelectorAll('.appliance-chip').forEach(c => c.classList.remove('active'));
+      recalc();
+    }
+
+    function toggleSolar() {
+      solarActive = !solarActive;
+      document.getElementById('solar-toggle-btn').classList.toggle('bg-emerald-500', solarActive);
+      document.getElementById('solar-toggle-btn').classList.toggle('bg-slate-500/30', !solarActive);
+      document.getElementById('solar-toggle-dot').classList.toggle('translate-x-6', solarActive);
+      document.getElementById('solar-panel-body').classList.toggle('hidden', !solarActive);
+      document.getElementById('status-pill').textContent = solarActive ? '☀️ Autoconsumo Activo' : 'Red Estándar';
+      recalc();
+    }
+
+    function recalc() {
+      const dailyKwh = parseFloat(document.getElementById('input-daily-kwh').value) || 0;
+      const p1Kw = parseFloat(document.getElementById('input-p1-kw').value) || 0;
+      const priceFixed = parseFloat(document.getElementById('input-price-fixed').value) || 0.128;
+
+      localStorage.setItem('krono_energy_v3', JSON.stringify({ dailyKwh, p1Kw, priceFixed }));
+      document.getElementById('lbl-daily-kwh').textContent = dailyKwh.toFixed(1);
+
+      document.getElementById('live-watts-display').textContent = activeWatts.toLocaleString('es-ES') + ' W';
+      const liveHourEuro = (activeWatts / 1000) * priceFixed * 1.05113 * 1.21;
+      document.getElementById('live-euro-hour').textContent = liveHourEuro.toFixed(2).replace('.', ',') + ' €/hora';
+      document.getElementById('icp-warning').classList.toggle('hidden', activeWatts <= (p1Kw * 1000));
+
+      let days = 30.416;
+      let title = 'Factura Mensual Estimada';
+      let unit = '€';
+      if (currentPeriod === 'live') { days = 1/24; title = 'Gasto Instantáneo Total'; unit = '€/h'; }
+      else if (currentPeriod === 'day') { days = 1; title = 'Coste Diario Completo'; }
+      else if (currentPeriod === 'week') { days = 7; title = 'Coste Semanal Acumulado'; }
+      else if (currentPeriod === 'year') { days = 365; title = 'Proyección Anual Completa'; }
+
+      const powerCost = (p1Kw * 0.089) * days;
+      const baseGridKwh = currentPeriod === 'live' ? (activeWatts / 1000) : (dailyKwh * days);
+      const baseEnergyCost = baseGridKwh * priceFixed;
+      const meterRent = 0.02663 * days;
+      const baseTotal = ((powerCost + baseEnergyCost) * 1.05113 + meterRent) * 1.21;
+
+      let finalGridKwh = baseGridKwh;
+      let solarComp = 0;
+      let bvSaved = 0;
+      const numPanels = parseInt(document.getElementById('input-panels').value) || 8;
+      const solarDailyGen = numPanels * 2.025;
+      document.getElementById('lbl-num-panels').textContent = numPanels + ' placas';
+      document.getElementById('lbl-solar-gen').textContent = solarDailyGen.toFixed(1);
+
+      if (solarActive && currentPeriod !== 'live') {
+        const totalSolarPeriod = solarDailyGen * days;
+        const directSelf = Math.min(baseGridKwh, totalSolarPeriod * 0.40);
+        const surplusKwh = Math.max(0, totalSolarPeriod - directSelf);
+        finalGridKwh = Math.max(0, baseGridKwh - directSelf);
+        const rawEnergyCost = finalGridKwh * priceFixed;
+        const surplusEuros = surplusKwh * 0.08;
+        if (document.getElementById('check-bv').checked) {
+          solarComp = Math.min(rawEnergyCost + powerCost, surplusEuros);
+          bvSaved = Math.max(0, surplusEuros - solarComp);
+        } else {
+          solarComp = Math.min(rawEnergyCost, surplusEuros);
+        }
+      }
+
+      const finalEnergyCost = finalGridKwh * priceFixed;
+      const netBeforeTax = Math.max(0, powerCost + finalEnergyCost - solarComp);
+      const finalTax = ((netBeforeTax * 1.05113) + meterRent) * 0.21 + (netBeforeTax * 0.05113) + meterRent;
+      const finalTotal = netBeforeTax + finalTax;
+
+      document.getElementById('period-title').textContent = title;
+      document.getElementById('main-total').textContent = finalTotal.toFixed(2).replace('.', ',');
+      document.getElementById('effective-kwh-badge').textContent = 'Real: ' + (baseGridKwh > 0 ? (finalTotal / baseGridKwh).toFixed(2) : 0) + ' €/kWh';
+
+      const refMax = 180 * (days / 30.416);
+      const fillRatio = Math.min(1, finalTotal / Math.max(0.5, refMax));
+      const ring = document.getElementById('ring-energy');
+      ring.style.strokeDashoffset = 314.16 - (314.16 * fillRatio);
+      ring.setAttribute('stroke', solarActive ? '#10b981' : '#3b82f6');
+
+      document.getElementById('val-power-cost').textContent = powerCost.toFixed(2).replace('.', ',') + ' €';
+      document.getElementById('val-energy-cost').textContent = finalEnergyCost.toFixed(2).replace('.', ',') + ' €';
+      document.getElementById('val-tax-cost').textContent = finalTax.toFixed(2).replace('.', ',') + ' €';
+
+      document.getElementById('row-solar-comp').classList.toggle('hidden', !solarActive || currentPeriod === 'live');
+      document.getElementById('solar-summary-card').classList.toggle('hidden', !solarActive || currentPeriod === 'live');
+      if (solarActive && currentPeriod !== 'live') {
+        document.getElementById('val-solar-comp').textContent = '-' + solarComp.toFixed(2).replace('.', ',') + ' €';
+        document.getElementById('val-solar-savings').textContent = '-' + Math.max(0, baseTotal - finalTotal).toFixed(2).replace('.', ',') + ' €';
+        document.getElementById('val-bv-accum').textContent = bvSaved.toFixed(2).replace('.', ',') + ' €';
+      }
+
+      const netE = Math.max(0, finalEnergyCost - solarComp);
+      const sumAll = Math.max(0.01, netE + powerCost + finalTax);
+      const pE = Math.round((netE / sumAll) * 100);
+      const pP = Math.round((powerCost / sumAll) * 100);
+      const pT = Math.max(0, 100 - pE - pP);
+      document.getElementById('pct-e').textContent = pE + '%';
+      document.getElementById('pct-p').textContent = pP + '%';
+      document.getElementById('pct-t').textContent = pT + '%';
+      document.getElementById('bar-e').style.width = pE + '%';
+      document.getElementById('bar-p').style.width = pP + '%';
+      document.getElementById('bar-t').style.width = pT + '%';
+
+      let annualOverpay = (priceFixed > 0.115) ? (priceFixed - 0.112) * (dailyKwh * 365) * 1.27 : 65;
+      const totalPotentialSave = Math.max(65, Math.round(annualOverpay));
+      document.getElementById('cta-save-amount').textContent = totalPotentialSave + ' €/año';
+      document.getElementById('audit-messages').innerHTML = `<div class="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[var(--text-primary)]">💡 <strong>Oportunidad:</strong> Puedes optimizar tu contrato y ahorrar aproximadamente <strong>${totalPotentialSave} € al año</strong> con una tarifa competitiva sin permanencia.</div>`;
+      document.getElementById('modal-comparison-text').innerHTML = `Cambiando a nuestra tarifa de referencia recomendada ahorrarás unos <strong>${totalPotentialSave} € este año</strong>. Haz clic abajo para consultar las condiciones y activar la bonificación.`;
+    }
+
+    function openTariffModal() { document.getElementById('tariff-modal').classList.remove('hidden'); }
+    function closeTariffModal() { document.getElementById('tariff-modal').classList.add('hidden'); }
+
+    function shareReport() {
+      const total = document.getElementById('main-total').textContent;
+      const text = `⚡ *Auditoría Eléctrica KRONO OS*\n• Gasto estimado: *${total} €*\n• Calculado en KronoLabs.`;
+      navigator.clipboard.writeText(text);
+      const toast = document.getElementById('toast');
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+  </script>
+</body>
+</html>
