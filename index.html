@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KRONO // Precision Energy OS v3.0</title>
+  <title>KRONO // Precision Energy OS v3.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
   <script>
@@ -129,57 +129,59 @@
   <div id="aura-top" class="ambient-light w-[420px] h-[420px] bg-blue-600/15 top-[-120px] left-[-100px]"></div>
   <div id="aura-bottom" class="ambient-light w-[380px] h-[380px] bg-cyan-500/10 bottom-[5%] right-[-120px]"></div>
 
-  <!-- BARRA SUPERIOR -->
-  <header class="sticky top-3 z-50 mx-auto max-w-6xl px-3 sm:px-5">
-    <nav class="glass-panel rounded-2xl px-4 py-2.5 flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+  <!-- BARRA SUPERIOR ULTRA-LIMPIA (1 SOLA LÍNEA EN MÓVIL) -->
+  <header class="sticky top-2.5 z-50 mx-auto max-w-6xl px-3 sm:px-5">
+    <nav class="glass-panel rounded-2xl px-3 py-2 flex items-center justify-between gap-2">
+      
+      <!-- Izquierda: Logo compacto -->
+      <div class="flex items-center gap-2 shrink-0">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-md shadow-blue-500/25">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="font-extrabold tracking-tight text-base sm:text-lg">KRONO</span>
-            <span class="text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-blue-500/15 text-blue-500 dark:text-blue-400 border border-blue-500/30 font-bold">OS 3.0</span>
-          </div>
-          <p class="text-[10px] text-[var(--text-muted)] hidden sm:block">✓ Memoria local activa</p>
+        <div class="flex items-center gap-1">
+          <span class="font-extrabold tracking-tight text-sm sm:text-base text-[var(--text-primary)]">KRONO</span>
+          <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25 font-bold">OS</span>
         </div>
       </div>
 
-      <div class="flex items-center gap-1 glass-sub p-1 rounded-xl">
-        <button onclick="switchMainView('app')" id="nav-app" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow">
-          ⚡ Auditor Luz & Solar
+      <!-- Centro: Selector tipo píldora Apple (Sin saltos de línea) -->
+      <div class="flex items-center glass-sub p-1 rounded-xl shrink-0">
+        <button onclick="switchMainView('app')" id="nav-app" class="px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all bg-blue-600 text-white shadow-sm">
+          ⚡ Auditor
         </button>
-        <button onclick="switchMainView('hub')" id="nav-hub" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
+        <button onclick="switchMainView('hub')" id="nav-hub" class="px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
           Suite (4)
         </button>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button onclick="shareReport()" title="Copiar Informe" class="px-2.5 py-1.5 rounded-xl glass-sub text-xs font-semibold text-[var(--text-secondary)] hover:border-blue-500/40 transition-all flex items-center gap-1">
-          <span>📤</span> <span class="hidden md:inline">Informe</span>
+      <!-- Derecha: Botones de acción cuadrados simétricos -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button onclick="shareReport()" title="Copiar Informe" class="w-8 h-8 rounded-xl glass-sub flex items-center justify-center text-xs hover:border-blue-500/40 transition-all">
+          📤
         </button>
-        <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl glass-sub flex items-center justify-center hover:scale-105 transition-all">
-          <span id="theme-icon" class="text-sm">☀️</span>
+        <button onclick="toggleTheme()" title="Cambiar Tema" class="w-8 h-8 rounded-xl glass-sub flex items-center justify-center hover:scale-105 transition-all">
+          <span id="theme-icon" class="text-xs">☀️</span>
         </button>
       </div>
+
     </nav>
   </header>
 
-  <main class="max-w-6xl mx-auto px-3 sm:px-5 mt-5">
+  <main class="max-w-6xl mx-auto px-3 sm:px-5 mt-4">
 
     <!-- VISTA 1: AUDITOR -->
     <section id="view-app" class="space-y-5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">Centro de Control Energético</h1>
+        <div class="px-1">
+          <h1 class="text-xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">Centro de Control Energético</h1>
           <p class="text-xs text-[var(--text-muted)]">Cálculo exacto con peajes CNMC e impuestos de España</p>
         </div>
-        <div class="glass-panel p-1.5 rounded-2xl grid grid-cols-5 gap-1 sm:inline-flex self-stretch sm:self-auto">
-          <button onclick="setPeriod('live')" id="p-live" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Vivo</button>
-          <button onclick="setPeriod('day')" id="p-day" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Día</button>
-          <button onclick="setPeriod('week')" id="p-week" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Semana</button>
-          <button onclick="setPeriod('month')" id="p-month" class="px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md transition-all text-center">Mes</button>
-          <button onclick="setPeriod('year')" id="p-year" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Año</button>
+        <div class="glass-panel p-1 rounded-2xl grid grid-cols-5 gap-1 sm:inline-flex self-stretch sm:self-auto">
+          <button onclick="setPeriod('live')" id="p-live" class="px-2.5 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Vivo</button>
+          <button onclick="setPeriod('day')" id="p-day" class="px-2.5 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Día</button>
+          <button onclick="setPeriod('week')" id="p-week" class="px-2.5 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Semana</button>
+          <button onclick="setPeriod('month')" id="p-month" class="px-2.5 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md transition-all text-center">Mes</button>
+          <button onclick="setPeriod('year')" id="p-year" class="px-2.5 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]">Año</button>
         </div>
       </div>
 
@@ -410,14 +412,14 @@
     function switchMainView(view) {
       document.getElementById('view-app').classList.toggle('hidden', view !== 'app');
       document.getElementById('view-hub').classList.toggle('hidden', view !== 'hub');
-      document.getElementById('nav-app').className = view === 'app' ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow' : 'px-3 py-1.5 rounded-lg text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all';
-      document.getElementById('nav-hub').className = view === 'hub' ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow' : 'px-3 py-1.5 rounded-lg text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all';
+      document.getElementById('nav-app').className = view === 'app' ? 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all bg-blue-600 text-white shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all';
+      document.getElementById('nav-hub').className = view === 'hub' ? 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all bg-blue-600 text-white shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all';
     }
 
     function setPeriod(p) {
       currentPeriod = p;
       ['live', 'day', 'week', 'month', 'year'].forEach(id => {
-        document.getElementById('p-' + id).className = (id === p) ? 'px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md transition-all text-center' : 'px-3 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]';
+        document.getElementById('p-' + id).className = (id === p) ? 'px-2.5 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md transition-all text-center' : 'px-2.5 py-2 rounded-xl text-xs font-bold transition-all text-center text-[var(--text-secondary)]';
       });
       recalc();
     }
